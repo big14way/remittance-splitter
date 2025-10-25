@@ -9,6 +9,9 @@
     "deploy": "hardhat run scripts/deploy.ts",
     "deploy:alfajores": "hardhat run scripts/deploy.ts --network alfajores",
     "deploy:celo": "hardhat run scripts/deploy.ts --network celo",
+    "test-txs": "hardhat run scripts/testTransactions.ts",
+    "test-txs:alfajores": "hardhat run scripts/testTransactions.ts --network alfajores",
+    "test-txs:celo": "hardhat run scripts/testTransactions.ts --network celo",
     "frontend": "cd frontend && npm run dev",
     "frontend:build": "cd frontend && npm run build"
   },

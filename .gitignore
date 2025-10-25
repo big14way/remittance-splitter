@@ -13,3 +13,7 @@ artifacts
 # Frontend build
 frontend/dist
 frontend/node_modules
+
+# Test results
+test-results-*.json
+deploy.log
