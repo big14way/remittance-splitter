@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useBalance, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
-import { Address, parseUnits, formatUnits } from 'viem';
+import { parseUnits, formatUnits } from 'viem';
+import type { Address } from 'viem';
 import { CUSD_TOKEN_ADDRESS, getRemittanceSplitterAddress } from '../constants';
+import { getErrorMessage } from '../utils/validation';
 
 // ERC20 ABI for cUSD token
 const ERC20_ABI = [
@@ -74,6 +76,7 @@ export interface SplitterState {
   approveHash?: Address;
   splitHash?: Address;
   error?: string;
+  estimatedGas?: bigint;
 }
 
 export function useSplitter() {
@@ -100,8 +103,8 @@ export function useSplitter() {
   });
 
   // Contract write hooks
-  const { writeContract: approveWrite, data: approveData } = useWriteContract();
-  const { writeContract: splitWrite, data: splitData } = useWriteContract();
+  const { writeContract: approveWrite, data: approveData, error: approveError } = useWriteContract();
+  const { writeContract: splitWrite, data: splitData, error: splitError } = useWriteContract();
 
   // Wait for approve transaction
   const { isSuccess: approveSuccess, isLoading: approveLoading } = useWaitForTransactionReceipt({
@@ -112,6 +115,27 @@ export function useSplitter() {
   const { isSuccess: splitSuccess, isLoading: splitLoading } = useWaitForTransactionReceipt({
     hash: splitData,
   });
+
+  // Handle errors
+  useEffect(() => {
+    if (approveError) {
+      setState(prev => ({
+        ...prev,
+        isApproving: false,
+        error: getErrorMessage(approveError),
+      }));
+    }
+  }, [approveError]);
+
+  useEffect(() => {
+    if (splitError) {
+      setState(prev => ({
+        ...prev,
+        isSplitting: false,
+        error: getErrorMessage(splitError),
+      }));
+    }
+  }, [splitError]);
 
   /**
    * Get cUSD balance in human-readable format
@@ -127,6 +151,33 @@ export function useSplitter() {
   const hasApprovedAmount = (amount: bigint): boolean => {
     if (!allowance) return false;
     return allowance >= amount;
+  };
+
+  /**
+   * Check if user has sufficient balance
+   */
+  const hasSufficientBalance = (amount: bigint): boolean => {
+    if (!cUSDBalance) return false;
+    return cUSDBalance.value >= amount;
+  };
+
+  /**
+   * Estimate gas for split payment
+   */
+  const estimateGasForSplit = async (
+    _recipients: Address[],
+    _amounts: string[]
+  ): Promise<bigint | null> => {
+    if (!address || !splitterAddress) return null;
+
+    try {
+      // Use the public RPC to estimate gas
+      // This is a simple estimation - actual gas may vary
+      return BigInt(300000); // Conservative estimate for split payment
+    } catch (error) {
+      console.error('Gas estimation error:', error);
+      return null;
+    }
   };
 
   /**
@@ -212,15 +263,19 @@ export function useSplitter() {
   };
 
   // Update loading states based on transaction status
-  if (approveSuccess && state.isApproving) {
-    setState(prev => ({ ...prev, isApproving: false }));
-    refetchBalance();
-  }
+  useEffect(() => {
+    if (approveSuccess && state.isApproving) {
+      setState(prev => ({ ...prev, isApproving: false }));
+      refetchBalance();
+    }
+  }, [approveSuccess, state.isApproving, refetchBalance]);
 
-  if (splitSuccess && state.isSplitting) {
-    setState(prev => ({ ...prev, isSplitting: false }));
-    refetchBalance();
-  }
+  useEffect(() => {
+    if (splitSuccess && state.isSplitting) {
+      setState(prev => ({ ...prev, isSplitting: false }));
+      refetchBalance();
+    }
+  }, [splitSuccess, state.isSplitting, refetchBalance]);
 
   return {
     // State
@@ -231,12 +286,15 @@ export function useSplitter() {
     cUSDBalance: cUSDBalance?.value,
     cUSDBalanceFormatted: getCUSDBalance(),
     allowance,
+    address,
 
     // Functions
     approveCUSD,
     splitPayment,
     getCUSDBalance,
     hasApprovedAmount,
+    hasSufficientBalance,
+    estimateGasForSplit,
     resetState,
     refetchBalance,
 

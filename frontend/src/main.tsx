@@ -23,14 +23,14 @@ const networks = [celo, celoAlfajores];
 
 // Create Wagmi Adapter
 const wagmiAdapter = new WagmiAdapter({
-  networks,
+  networks: networks as any,
   projectId,
 });
 
 // Create AppKit
 createAppKit({
   adapters: [wagmiAdapter],
-  networks,
+  networks: networks as any,
   projectId,
   metadata: {
     name: 'Celo Remittance Splitter',
