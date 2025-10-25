@@ -1,100 +1,143 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title RemittanceSplitter
- * @dev Smart contract for splitting remittance payments among multiple recipients
+ * @dev Smart contract for splitting cUSD remittance payments among multiple recipients
+ * @notice This contract allows users to split a single cUSD payment to multiple recipients in one transaction
+ * @custom:security-contact security@example.com
  */
-contract RemittanceSplitter is Ownable, ReentrancyGuard {
-    struct Split {
-        address[] recipients;
-        uint256[] shares; // in basis points (1/100th of a percent)
-        bool active;
-    }
+contract RemittanceSplitter is ReentrancyGuard {
+    using SafeERC20 for IERC20;
 
-    mapping(bytes32 => Split) public splits;
+    /// @dev cUSD token address on Celo mainnet
+    address public constant CUSD_TOKEN = 0x765DE816845861e75A25fCA122bb6898B8B1282a;
 
-    event SplitCreated(bytes32 indexed splitId, address[] recipients, uint256[] shares);
-    event SplitExecuted(bytes32 indexed splitId, uint256 totalAmount);
-    event SplitDeactivated(bytes32 indexed splitId);
-
-    constructor() Ownable(msg.sender) {}
+    /// @dev Reference to the cUSD token contract
+    IERC20 private immutable cUSD;
 
     /**
-     * @dev Create a new split configuration
-     * @param splitId Unique identifier for the split
-     * @param recipients Array of recipient addresses
-     * @param shares Array of shares in basis points (must sum to 10000)
+     * @dev Emitted when a payment is successfully split among recipients
+     * @param sender Address that initiated the split payment
+     * @param recipients Array of addresses that received payments
+     * @param amounts Array of amounts received by each recipient
+     * @param totalAmount Total amount that was split
      */
-    function createSplit(
-        bytes32 splitId,
-        address[] memory recipients,
-        uint256[] memory shares
-    ) external onlyOwner {
-        require(recipients.length > 0, "No recipients");
-        require(recipients.length == shares.length, "Length mismatch");
-        require(!splits[splitId].active, "Split already exists");
+    event PaymentSplit(
+        address indexed sender,
+        address[] recipients,
+        uint256[] amounts,
+        uint256 totalAmount
+    );
 
-        uint256 totalShares = 0;
-        for (uint256 i = 0; i < shares.length; i++) {
-            require(recipients[i] != address(0), "Invalid recipient");
-            require(shares[i] > 0, "Share must be > 0");
-            totalShares += shares[i];
+    /**
+     * @dev Constructor initializes the cUSD token reference
+     */
+    constructor() {
+        cUSD = IERC20(CUSD_TOKEN);
+    }
+
+    /**
+     * @dev Splits a cUSD payment among multiple recipients
+     * @notice Caller must first approve this contract to spend the total amount of cUSD
+     * @param recipients Array of recipient addresses to receive payments
+     * @param amounts Array of amounts (in cUSD wei) corresponding to each recipient
+     *
+     * Requirements:
+     * - `recipients` and `amounts` arrays must have the same length
+     * - Arrays must not be empty
+     * - No recipient address can be zero address
+     * - No amount can be zero
+     * - Caller must have sufficient cUSD balance
+     * - Caller must have approved this contract for at least the total amount
+     *
+     * Emits a {PaymentSplit} event
+     *
+     * @custom:security Uses SafeERC20 to prevent reentrancy and handle token transfer failures
+     * @custom:gas-optimization Caches array length and uses unchecked arithmetic where safe
+     */
+    function splitPayment(
+        address[] calldata recipients,
+        uint256[] calldata amounts
+    ) external nonReentrant {
+        // Input validation
+        uint256 recipientsLength = recipients.length;
+        require(recipientsLength > 0, "RemittanceSplitter: empty recipients array");
+        require(
+            recipientsLength == amounts.length,
+            "RemittanceSplitter: recipients and amounts length mismatch"
+        );
+
+        // Calculate total amount and validate inputs
+        uint256 totalAmount;
+        for (uint256 i = 0; i < recipientsLength; ) {
+            require(
+                recipients[i] != address(0),
+                "RemittanceSplitter: recipient is zero address"
+            );
+            require(amounts[i] > 0, "RemittanceSplitter: amount is zero");
+
+            totalAmount += amounts[i];
+
+            unchecked {
+                ++i;
+            }
         }
-        require(totalShares == 10000, "Shares must sum to 10000");
 
-        splits[splitId] = Split({
-            recipients: recipients,
-            shares: shares,
-            active: true
-        });
+        // Check sender has sufficient balance
+        require(
+            cUSD.balanceOf(msg.sender) >= totalAmount,
+            "RemittanceSplitter: insufficient cUSD balance"
+        );
 
-        emit SplitCreated(splitId, recipients, shares);
-    }
+        // Check sender has approved sufficient allowance
+        require(
+            cUSD.allowance(msg.sender, address(this)) >= totalAmount,
+            "RemittanceSplitter: insufficient allowance"
+        );
 
-    /**
-     * @dev Execute a split payment
-     * @param splitId The split configuration to use
-     */
-    function executeSplit(bytes32 splitId) external payable nonReentrant {
-        require(msg.value > 0, "No payment sent");
-        require(splits[splitId].active, "Split not active");
+        // Execute transfers to all recipients
+        for (uint256 i = 0; i < recipientsLength; ) {
+            cUSD.safeTransferFrom(msg.sender, recipients[i], amounts[i]);
 
-        Split memory split = splits[splitId];
-        uint256 totalAmount = msg.value;
-
-        for (uint256 i = 0; i < split.recipients.length; i++) {
-            uint256 amount = (totalAmount * split.shares[i]) / 10000;
-            (bool success, ) = split.recipients[i].call{value: amount}("");
-            require(success, "Transfer failed");
+            unchecked {
+                ++i;
+            }
         }
 
-        emit SplitExecuted(splitId, totalAmount);
+        // Emit event for off-chain tracking
+        emit PaymentSplit(msg.sender, recipients, amounts, totalAmount);
     }
 
     /**
-     * @dev Deactivate a split configuration
-     * @param splitId The split to deactivate
+     * @dev Returns the cUSD token address used by this contract
+     * @return address The cUSD token contract address
      */
-    function deactivateSplit(bytes32 splitId) external onlyOwner {
-        require(splits[splitId].active, "Split not active");
-        splits[splitId].active = false;
-        emit SplitDeactivated(splitId);
+    function getTokenAddress() external pure returns (address) {
+        return CUSD_TOKEN;
     }
 
     /**
-     * @dev Get split details
-     * @param splitId The split to query
+     * @dev Checks if a user has approved sufficient allowance for a split payment
+     * @param user Address of the user to check
+     * @param totalAmount Total amount needed for the split
+     * @return bool True if user has sufficient allowance, false otherwise
      */
-    function getSplit(bytes32 splitId) external view returns (
-        address[] memory recipients,
-        uint256[] memory shares,
-        bool active
-    ) {
-        Split memory split = splits[splitId];
-        return (split.recipients, split.shares, split.active);
+    function hasApproved(address user, uint256 totalAmount) external view returns (bool) {
+        return cUSD.allowance(user, address(this)) >= totalAmount;
+    }
+
+    /**
+     * @dev Checks if a user has sufficient balance for a split payment
+     * @param user Address of the user to check
+     * @param totalAmount Total amount needed for the split
+     * @return bool True if user has sufficient balance, false otherwise
+     */
+    function hasSufficientBalance(address user, uint256 totalAmount) external view returns (bool) {
+        return cUSD.balanceOf(user) >= totalAmount;
     }
 }
