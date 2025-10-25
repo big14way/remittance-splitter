@@ -1,0 +1,8 @@
+
+> celo-remittance-splitter@1.0.0 deploy:alfajores
+> hardhat run scripts/deploy.ts --network alfajores
+
+Deploying RemittanceSplitter to alfajores...
+
+❌ ERROR: No accounts configured!
+Please check your .env file has a valid PRIVATE_KEY

@@ -1,15 +1,10 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-import "dotenv/config";
+import * as dotenv from "dotenv";
 
-// Helper to validate private key
-const getAccounts = () => {
-  const privateKey = process.env.PRIVATE_KEY;
-  if (privateKey && privateKey.length === 64) {
-    return [privateKey];
-  }
-  return [];
-};
+dotenv.config();
+
+const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -28,16 +23,15 @@ const config: HardhatUserConfig = {
     // Celo Mainnet
     celo: {
       url: "https://forno.celo.org",
-      accounts: getAccounts(),
+      accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY.replace(/^0x/, '')}`] : [],
       chainId: 42220,
       gasPrice: 5000000000, // 5 gwei
     },
     // Celo Alfajores Testnet
     alfajores: {
       url: "https://alfajores-forno.celo-testnet.org",
-      accounts: getAccounts(),
+      accounts: PRIVATE_KEY ? [`0x${PRIVATE_KEY.replace(/^0x/, '')}`] : [],
       chainId: 44787,
-      gasPrice: 5000000000, // 5 gwei
     },
   },
   gasReporter: {

@@ -3,11 +3,25 @@ import { ethers, network } from "hardhat";
 async function main() {
   console.log(`Deploying RemittanceSplitter to ${network.name}...`);
 
-  const [deployer] = await ethers.getSigners();
+  const signers = await ethers.getSigners();
+
+  if (!signers || signers.length === 0) {
+    console.error("\n❌ ERROR: No accounts configured!");
+    console.error("Please check your .env file has a valid PRIVATE_KEY");
+    process.exit(1);
+  }
+
+  const [deployer] = signers;
   console.log(`Deploying with account: ${deployer.address}`);
 
   const balance = await ethers.provider.getBalance(deployer.address);
   console.log(`Account balance: ${ethers.formatEther(balance)} CELO`);
+
+  if (balance === 0n) {
+    console.error(`\n⚠️  WARNING: Account has 0 balance!`);
+    console.error(`Fund this address: ${deployer.address}`);
+    console.error(`Faucet: https://faucet.celo.org\n`);
+  }
 
   const RemittanceSplitter = await ethers.getContractFactory("RemittanceSplitter");
   const splitter = await RemittanceSplitter.deploy();

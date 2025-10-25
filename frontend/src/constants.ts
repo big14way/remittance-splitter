@@ -9,9 +9,9 @@ export const CUSD_TOKEN_ADDRESS = '0x765DE816845861e75A25fCA122bb6898B8B1282a' a
  */
 export const REMITTANCE_SPLITTER_ADDRESS = {
   // Celo Mainnet (Chain ID: 42220)
-  42220: '0x0000000000000000000000000000000000000000', // TODO: Update after deployment
+  42220: '0x0000000000000000000000000000000000000000', // TODO: Update after mainnet deployment
   // Alfajores Testnet (Chain ID: 44787)
-  44787: '0x0000000000000000000000000000000000000000', // TODO: Update after deployment
+  44787: '0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88', // Deployed ✅
 } as const;
 
 /**
