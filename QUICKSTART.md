@@ -2,6 +2,8 @@
 
 Get your RemittanceSplitter dApp running in minutes!
 
+**🚀 Try it live**: [https://frontend-g0v7nhqct-big14ways-projects.vercel.app](https://frontend-g0v7nhqct-big14ways-projects.vercel.app)
+
 ## 🚀 Quick Setup
 
 ### 1. Install Dependencies

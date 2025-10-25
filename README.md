@@ -4,10 +4,13 @@
 [![Solidity](https://img.shields.io/badge/Solidity-363636?style=for-the-badge&logo=solidity&logoColor=white)](https://soliditylang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://frontend-g0v7nhqct-big14ways-projects.vercel.app)
 
 > A smart contract-based solution for splitting remittance payments to multiple recipients in a single transaction on the Celo blockchain.
 
-**Live on Alfajores Testnet**: [0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88](https://alfajores.celoscan.io/address/0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88)
+**🚀 Live Demo**: [https://frontend-g0v7nhqct-big14ways-projects.vercel.app](https://frontend-g0v7nhqct-big14ways-projects.vercel.app)
+
+**📄 Smart Contract (Alfajores)**: [0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88](https://alfajores.celoscan.io/address/0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88)
 
 ---
 
@@ -866,7 +869,7 @@ If this project helped you, please consider:
 
 [![Celo](https://img.shields.io/badge/Built_on-Celo-FCFF52?style=for-the-badge&logo=celo&logoColor=black)](https://celo.org)
 
-[Website](https://example.com) • [Docs](./QUICKSTART.md) • [Demo](https://demo.example.com) • [Twitter](https://twitter.com)
+[Live Demo](https://frontend-g0v7nhqct-big14ways-projects.vercel.app) • [Docs](./QUICKSTART.md) • [Contract](https://alfajores.celoscan.io/address/0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88) • [GitHub](https://github.com/big14way/remittance-splitter)
 
 </div>
 
