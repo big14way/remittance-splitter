@@ -5,11 +5,11 @@
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Self Protocol](https://img.shields.io/badge/Self_Protocol-Privacy--First-blueviolet?style=for-the-badge)](https://self.xyz)
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://frontend-piffx3509-big14ways-projects.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://frontend-chi-gray-11.vercel.app)
 
 > A smart contract-based solution for splitting remittance payments to multiple recipients in a single transaction on the Celo blockchain. **Now with privacy-preserving identity verification powered by Self Protocol.**
 
-**🚀 Live Demo**: [https://frontend-piffx3509-big14ways-projects.vercel.app](https://frontend-piffx3509-big14ways-projects.vercel.app)
+**🚀 Live Demo**: [https://frontend-chi-gray-11.vercel.app](https://frontend-chi-gray-11.vercel.app)
 
 **📄 Smart Contract (Alfajores)**: [0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88](https://alfajores.celoscan.io/address/0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88)
 
@@ -958,7 +958,7 @@ If this project helped you, please consider:
 
 [![Celo](https://img.shields.io/badge/Built_on-Celo-FCFF52?style=for-the-badge&logo=celo&logoColor=black)](https://celo.org)
 
-[Live Demo](https://frontend-piffx3509-big14ways-projects.vercel.app) • [Docs](./QUICKSTART.md) • [Contract](https://alfajores.celoscan.io/address/0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88) • [GitHub](https://github.com/big14way/remittance-splitter)
+[Live Demo](https://frontend-chi-gray-11.vercel.app) • [Docs](./QUICKSTART.md) • [Contract](https://alfajores.celoscan.io/address/0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88) • [GitHub](https://github.com/big14way/remittance-splitter)
 
 </div>
 
