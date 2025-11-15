@@ -4,11 +4,12 @@
 [![Solidity](https://img.shields.io/badge/Solidity-363636?style=for-the-badge&logo=solidity&logoColor=white)](https://soliditylang.org/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://frontend-g0v7nhqct-big14ways-projects.vercel.app)
+[![Self Protocol](https://img.shields.io/badge/Self_Protocol-Privacy--First-blueviolet?style=for-the-badge)](https://self.xyz)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://frontend-piffx3509-big14ways-projects.vercel.app)
 
-> A smart contract-based solution for splitting remittance payments to multiple recipients in a single transaction on the Celo blockchain.
+> A smart contract-based solution for splitting remittance payments to multiple recipients in a single transaction on the Celo blockchain. **Now with privacy-preserving identity verification powered by Self Protocol.**
 
-**🚀 Live Demo**: [https://frontend-g0v7nhqct-big14ways-projects.vercel.app](https://frontend-g0v7nhqct-big14ways-projects.vercel.app)
+**🚀 Live Demo**: [https://frontend-piffx3509-big14ways-projects.vercel.app](https://frontend-piffx3509-big14ways-projects.vercel.app)
 
 **📄 Smart Contract (Alfajores)**: [0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88](https://alfajores.celoscan.io/address/0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88)
 
@@ -43,6 +44,7 @@ Traditional remittance payments face several challenges:
 ✅ **Use mobile-first Celo blockchain** for accessibility
 ✅ **Leverage stablecoins (cUSD)** to avoid volatility
 ✅ **Operate without traditional banking** infrastructure
+✅ **Privacy-preserving identity verification** via Self Protocol (optional)
 
 ### How It Works
 
@@ -86,6 +88,7 @@ Traditional remittance payments face several challenges:
 - ✅ **Security First**: ReentrancyGuard, comprehensive input validation
 - ✅ **Helper Functions**: Check balance and approval status on-chain
 - ✅ **Event Logging**: Track all splits with detailed events
+- ✅ **Identity Verification** (optional): Self Protocol integration for privacy-preserving KYC
 
 ### Frontend Features
 
@@ -98,6 +101,7 @@ Traditional remittance payments face several challenges:
 - ✅ **Transaction Tracking**: View on CeloScan with one click
 - ✅ **Responsive Design**: Works on desktop and mobile
 - ✅ **Loading States**: Clear visual feedback during transactions
+- ✅ **Self Protocol Integration**: Privacy-preserving identity verification (age, nationality, uniqueness)
 
 ---
 
@@ -654,6 +658,87 @@ const hasBalance = await splitter.hasSufficientBalance(
 
 ---
 
+## 🔐 Self Protocol Integration (NEW!)
+
+### Privacy-Preserving Identity Verification
+
+The Celo Remittance Splitter now supports **Self Protocol** for optional, privacy-preserving identity verification using zero-knowledge proofs.
+
+#### What is Self Protocol?
+
+Self Protocol enables users to prove key identity attributes without revealing personal data:
+- ✅ **Age Verification**: Prove you're 18+ without sharing date of birth
+- ✅ **Nationality Check**: Verify/exclude countries without revealing passport details
+- ✅ **Sybil Resistance**: Prove uniqueness (one person = one account)
+- ✅ **Zero-Knowledge Proofs**: Powered by zk-SNARKs cryptography
+- ✅ **Biometric Passport Support**: 129+ countries supported via NFC
+
+#### Why Use Self Protocol for Remittances?
+
+- **Compliance**: Meet regulatory requirements (age, nationality)
+- **Security**: Prevent fraud and Sybil attacks
+- **Privacy**: Protect user personal information
+- **Trust**: Ensure real people use the service
+
+#### Quick Setup
+
+```bash
+# 1. Install Self Protocol SDK
+cd frontend
+npm install @selfxyz/qrcode @selfxyz/core --legacy-peer-deps
+
+# 2. Deploy enhanced contract
+npm run deploy:self:alfajores
+
+# 3. Start frontend
+npm run frontend
+```
+
+#### User Experience
+
+1. User connects wallet
+2. Clicks "Verify Now" button
+3. Scans QR code with Self mobile app
+4. Proves identity using biometric passport (NFC scan)
+5. Zero-knowledge proof validated
+6. User can now split payments (verification valid for 24 hours)
+
+#### Documentation
+
+- **[Self Protocol Integration Guide](SELF_PROTOCOL_INTEGRATION.md)** - Complete documentation
+- **[Quick Setup](SELF_SETUP_QUICKSTART.md)** - 5-minute setup guide
+- **Self Protocol Docs**: https://docs.self.xyz
+
+#### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Smart Contract** | `RemittanceSplitterWithSelf.sol` with `onlyVerified` modifier |
+| **Frontend Hook** | `useSelfVerification.ts` - manages verification state |
+| **UI Component** | `SelfVerificationModal.tsx` - QR code display |
+| **Context** | `SelfVerificationContext.tsx` - global verification state |
+| **Expiry** | 24-hour verification validity |
+| **Toggle** | Can enable/disable verification requirement |
+
+#### Verification Requirements (Configurable)
+
+- Minimum age: 18 years old
+- Uniqueness proof (Sybil-resistance)
+- Nationality verification
+- Excluded countries (configurable)
+
+#### Deployment Scripts
+
+```bash
+# Deploy standard contract (no verification)
+npm run deploy:alfajores
+
+# Deploy Self Protocol enhanced contract
+npm run deploy:self:alfajores
+```
+
+---
+
 ## 📊 Project Statistics
 
 ```
@@ -693,7 +778,7 @@ Mobile Responsive: ✅ Yes
 
 - [ ] **DeFi Integration**: Auto-invest split amounts into yield protocols
 - [ ] **DAO Governance**: Community-driven feature development
-- [ ] **KYC/Compliance**: Optional identity verification for institutions
+- [x] **KYC/Compliance**: ✅ Self Protocol identity verification integrated
 - [ ] **Fiat On/Off Ramps**: Direct bank integration
 - [ ] **AI Recommendations**: Smart budgeting and split suggestions
 - [ ] **Cross-Chain Bridge**: Send between different blockchains
@@ -743,6 +828,8 @@ Found a bug? Please [open an issue](https://github.com/big14way/remittance-split
 - **[TESTING.md](TESTING.md)** - Comprehensive testing documentation
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deployment instructions
 - **[contracts/README.md](contracts/)** - Smart contract details
+- **[SELF_PROTOCOL_INTEGRATION.md](SELF_PROTOCOL_INTEGRATION.md)** - Self Protocol integration guide
+- **[SELF_SETUP_QUICKSTART.md](SELF_SETUP_QUICKSTART.md)** - Self Protocol quick setup
 
 ---
 
@@ -800,6 +887,7 @@ SOFTWARE.
 ## 🙏 Acknowledgments
 
 - **Celo Foundation** - For building an amazing mobile-first blockchain
+- **Self Protocol** - For privacy-preserving identity verification
 - **OpenZeppelin** - For secure, audited smart contract libraries
 - **WalletConnect/Reown** - For seamless wallet integration
 - **Wagmi Team** - For excellent React hooks for Ethereum
@@ -835,6 +923,7 @@ If this project helped you, please consider:
 - ✅ MVP Launch on Alfajores
 - ✅ Smart contract deployment
 - ✅ Frontend dApp release
+- ✅ Self Protocol identity verification integration
 - [ ] Mainnet deployment
 - [ ] User testing & feedback
 
@@ -869,7 +958,7 @@ If this project helped you, please consider:
 
 [![Celo](https://img.shields.io/badge/Built_on-Celo-FCFF52?style=for-the-badge&logo=celo&logoColor=black)](https://celo.org)
 
-[Live Demo](https://frontend-g0v7nhqct-big14ways-projects.vercel.app) • [Docs](./QUICKSTART.md) • [Contract](https://alfajores.celoscan.io/address/0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88) • [GitHub](https://github.com/big14way/remittance-splitter)
+[Live Demo](https://frontend-piffx3509-big14ways-projects.vercel.app) • [Docs](./QUICKSTART.md) • [Contract](https://alfajores.celoscan.io/address/0xC3a201c2Dc904ae32a9a0adea3478EB252d5Cf88) • [GitHub](https://github.com/big14way/remittance-splitter)
 
 </div>
 
