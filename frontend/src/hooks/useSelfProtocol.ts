@@ -35,16 +35,17 @@ export function useSelfProtocol(): UseSelfProtocolReturn {
     try {
       // Get environment variables
       const appName = import.meta.env.VITE_SELF_APP_NAME || 'Celo Remittance Splitter';
+      const endpoint = import.meta.env.VITE_SELF_ENDPOINT || 'https://api.self.xyz';
 
       // Create Self App instance with verification requirements
-      // Using https endpoint type for frontend-only implementation
+      // Using https endpoint for API-based verification
       const app = new SelfAppBuilder({
         version: 2,
         appName: appName,
         scope: 'remittance-verification',
-        endpoint: address.toLowerCase(), // Use user's address as endpoint
+        endpoint: endpoint, // Use HTTPS API endpoint
         userId: address,
-        endpointType: 'https', // Frontend-only mode
+        endpointType: 'https', // HTTPS API mode
         userIdType: 'hex',
         disclosures: {
           // Minimum age verification (18+)
