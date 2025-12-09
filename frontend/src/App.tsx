@@ -4,6 +4,9 @@ import type { Address } from 'viem';
 import { Toaster, toast } from 'react-hot-toast';
 import { useSplitter } from './hooks/useSplitter';
 import { isValidAddress, isValidAmount, hasDuplicateAddresses, formatAmount } from './utils/validation';
+import { SelfVerificationModal } from './components/SelfVerificationModal';
+import { useSelfVerificationContext } from './contexts/SelfVerificationContext';
+import type { VerificationResult } from './hooks/useSelfProtocol';
 
 interface Recipient {
   address: string;
@@ -17,6 +20,13 @@ function App() {
   ]);
   const [validationErrors, setValidationErrors] = useState<{ [key: number]: string }>({});
   const [estimatedGas, setEstimatedGas] = useState<string>('');
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
+
+  const {
+    isVerified,
+    setVerificationData,
+    requireVerification,
+  } = useSelfVerificationContext();
 
   const {
     address,
@@ -121,8 +131,19 @@ function App() {
   };
 
   const setMaxAmount = (index: number) => {
-    if (!cUSDBalance) {
-      toast.error('Unable to get balance');
+    if (!address) {
+      toast.error('Please connect your wallet first');
+      return;
+    }
+
+    if (!cUSDBalance || cUSDBalance === undefined) {
+      toast.error('Balance is still loading. Please wait a moment and try again.');
+      return;
+    }
+
+    const balance = parseFloat(cUSDBalanceFormatted);
+    if (balance === 0 || isNaN(balance)) {
+      toast.error('You have no cUSD balance. Get testnet cUSD from faucet.celo.org');
       return;
     }
 
@@ -131,10 +152,10 @@ function App() {
       .filter((_, i) => i !== index)
       .reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
 
-    const availableBalance = parseFloat(cUSDBalanceFormatted) - otherAmounts;
+    const availableBalance = balance - otherAmounts;
 
     if (availableBalance <= 0) {
-      toast.error('No balance available');
+      toast.error('No balance available. Other recipients already use all your balance.');
       return;
     }
 
@@ -305,7 +326,12 @@ function App() {
                 <div className="text-right">
                   <div className="text-sm text-gray-500">cUSD Balance</div>
                   <div className="text-lg font-semibold text-celo-green">
-                    {formatAmount(cUSDBalanceFormatted, 4)} cUSD
+                    {address && cUSDBalance !== undefined
+                      ? `${formatAmount(cUSDBalanceFormatted, 4)} cUSD`
+                      : address
+                        ? 'Loading...'
+                        : '0.00 cUSD'
+                    }
                   </div>
                 </div>
                 <appkit-button />
@@ -331,6 +357,49 @@ function App() {
               <div className="text-sm text-gray-500 mb-1">Connected Wallet</div>
               <div className="font-mono text-sm text-gray-900 break-all">{address}</div>
             </div>
+
+            {/* Self Protocol Verification Badge */}
+            {requireVerification && (
+              <div className="mb-6">
+                {isVerified ? (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-green-900">Identity Verified ✓</div>
+                        <div className="text-sm text-green-700">You can split payments</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                          <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-yellow-900">Identity Verification Required</div>
+                          <div className="text-sm text-yellow-700">Verify your identity to split payments</div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowVerificationModal(true)}
+                        className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                      >
+                        Verify Now
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Recipients Form */}
             <div className="space-y-4 mb-4">
@@ -538,6 +607,29 @@ function App() {
           </div>
         </main>
       </div>
+
+      {/* Self Protocol Verification Modal */}
+      <SelfVerificationModal
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        onVerificationComplete={(result: VerificationResult) => {
+          if (result.isVerified) {
+            // Store full verification data including ZK proof
+            setVerificationData({
+              isVerified: true,
+              attestationId: result.attestationId,
+              proof: result.proof,
+              publicSignals: result.publicSignals,
+            });
+            toast.success('Identity verified successfully!', {
+              icon: '✅',
+              duration: 4000,
+            });
+          }
+        }}
+        minimumAge={18}
+        excludedCountries={[]}
+      />
     </>
   );
 }

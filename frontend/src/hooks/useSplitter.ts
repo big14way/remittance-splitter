@@ -88,10 +88,11 @@ export function useSplitter() {
 
   const splitterAddress = chainId ? getRemittanceSplitterAddress(chainId) as Address : undefined;
 
-  // Get cUSD balance
+  // Get cUSD balance with explicit chainId
   const { data: cUSDBalance, refetch: refetchBalance } = useBalance({
     address: address,
     token: CUSD_TOKEN_ADDRESS,
+    chainId: chainId,
   });
 
   // Read allowance
@@ -100,6 +101,7 @@ export function useSplitter() {
     abi: ERC20_ABI,
     functionName: 'allowance',
     args: address && splitterAddress ? [address, splitterAddress] : undefined,
+    chainId: chainId,
   });
 
   // Contract write hooks
