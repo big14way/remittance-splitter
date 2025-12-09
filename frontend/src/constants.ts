@@ -33,3 +33,17 @@ export const CUSD_DECIMALS = 18;
 export function getRemittanceSplitterAddress(chainId: number): string {
   return REMITTANCE_SPLITTER_ADDRESS[chainId as keyof typeof REMITTANCE_SPLITTER_ADDRESS] || '';
 }
+
+/**
+ * Self Protocol Configuration
+ */
+export const SELF_PROTOCOL_CONFIG = {
+  appName: 'Celo Remittance Splitter',
+  scope: 'celo-remittance-splitter',
+  minimumAge: 18,
+  excludedCountries: [] as string[],
+  ofac: false,
+  verificationValidityMs: 24 * 60 * 60 * 1000, // 24 hours
+  // Set to true to require verification for payments
+  requireVerification: false,
+} as const;

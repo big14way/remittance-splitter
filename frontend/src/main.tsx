@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { celo, celoAlfajores } from '@reown/appkit/networks';
+import { SelfVerificationProvider } from './contexts/SelfVerificationContext';
+import { SELF_PROTOCOL_CONFIG } from './constants';
 import './index.css';
 import App from './App.tsx';
 
@@ -47,7 +49,9 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <App />
+        <SelfVerificationProvider requireVerification={SELF_PROTOCOL_CONFIG.requireVerification}>
+          <App />
+        </SelfVerificationProvider>
       </QueryClientProvider>
     </WagmiProvider>
   </StrictMode>,
